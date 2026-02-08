@@ -15,10 +15,16 @@ function App() {
     left: undefined,
   });
 
-  const handleHover = (e: React.MouseEvent) => {
+  const handleHover = (
+    e:
+      | React.MouseEvent<HTMLButtonElement>
+      | React.TouchEvent<HTMLButtonElement>,
+  ) => {
+    e.preventDefault(); // prevent touch click
+
     setHovered(true);
 
-    const container = (e.currentTarget as HTMLDivElement).parentElement!;
+    const container = e.currentTarget.parentElement as HTMLDivElement;
     const rect = container.getBoundingClientRect();
 
     const buttonWidthPercent = 20; // approx button width %
@@ -26,20 +32,24 @@ function App() {
 
     let newLeft: number, newTop: number;
 
+    // Get pointer coordinates for mouse or touch
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+
     do {
       newLeft = Math.random() * (100 - buttonWidthPercent);
       newTop = Math.random() * (100 - buttonHeightPercent);
     } while (
-      e.clientX - rect.left >= (newLeft / 100) * rect.width &&
-      e.clientX - rect.left <=
+      clientX - rect.left >= (newLeft / 100) * rect.width &&
+      clientX - rect.left <=
         ((newLeft + buttonWidthPercent) / 100) * rect.width &&
-      e.clientY - rect.top >= (newTop / 100) * rect.height &&
-      e.clientY - rect.top <=
-        ((newTop + buttonHeightPercent) / 100) * rect.height
+      clientY - rect.top >= (newTop / 100) * rect.height &&
+      clientY - rect.top <= ((newTop + buttonHeightPercent) / 100) * rect.height
     );
 
     setRandomPosition({ left: newLeft, top: newTop });
   };
+
   return (
     <main className={styles.main}>
       <div className={styles.container}>
@@ -82,6 +92,7 @@ function App() {
               className={`${styles.noButton} ${styles.disabled}`}
               onClick={handleHover}
               onMouseEnter={handleHover}
+              onTouchStart={handleHover}
               style={{
                 position: hovered === false ? "relative" : "absolute",
                 left: `${randomPosition.left}%`,
